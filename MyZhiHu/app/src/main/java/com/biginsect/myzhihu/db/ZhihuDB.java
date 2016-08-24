@@ -43,7 +43,7 @@ public class ZhihuDB {
             values.put("news_title",news.getTitle());
             values.put("news_bitmapUrl",news.getBitmapUrl());
             //values.put("news_isCollected",news.getIsCollected());
-            db.insert("News",null,values);
+            db.insertWithOnConflict("News",null,values,SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
 

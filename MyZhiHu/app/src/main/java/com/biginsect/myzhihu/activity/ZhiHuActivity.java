@@ -4,13 +4,18 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.view.PagerTitleStrip;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.biginsect.myzhihu.Adapter.MyViewPagerAdapter;
 import com.biginsect.myzhihu.Adapter.NewsAdapter;
 import com.biginsect.myzhihu.R;
+import com.biginsect.myzhihu.View.MyViewPager;
 import com.biginsect.myzhihu.db.ZhihuDB;
 import com.biginsect.myzhihu.model.News;
 import com.biginsect.myzhihu.util.HttpCallbackListener;
@@ -33,15 +38,42 @@ public class ZhiHuActivity extends AppCompatActivity {
     private ZhihuDB zhihuDB ;
     private List<News> dataList = new ArrayList<News>();
 
+    //实现viewpager所需要的属性
+    View view1;
+    private ViewPager viewPager;
+    private PagerTitleStrip titleStrip;
+    private List<View> viewList;
+    private List<String> titles;
+    private MyViewPagerAdapter myViewPagerAdapter;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.zhihu_layout);
+        setContentView(R.layout.main);
+
+
+        viewPager = (MyViewPager) findViewById(R.id.viewPager);
+        titleStrip = (PagerTitleStrip)findViewById(R.id.titleStrip);
+
+        //tab之间的距离,并没有什么效果。
+//        pagerTabStrip.setTextSpacing(30);
+        initDatas();
+        myViewPagerAdapter = new MyViewPagerAdapter(viewList,titles);
+        viewPager.setAdapter(myViewPagerAdapter);
+        viewPager.setCurrentItem(0);
+        //滑动这个viewpager的响应事件
+
+
         zhihuDB = ZhihuDB.getInstance(this);
         adapter = new NewsAdapter(this,R.layout.news_item,dataList);
         queryNews();
-        listView = (ListView)findViewById(R.id.listView);
+        //错误的写法
+//        listView = (ListView)getLayoutInflater().inflate(R.layout.zhihu_layout,null).findViewById(R.id.listView);
+
+        
+        listView = (ListView)view1.findViewById(R.id.listView);
         listView.setAdapter(adapter);
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -56,6 +88,20 @@ public class ZhiHuActivity extends AppCompatActivity {
 
 
     }
+
+    //初始化viewpager中所需要的title view等
+
+    private void initDatas(){
+        viewList = new ArrayList<>();
+        titles = new ArrayList<>();
+        view1 = LayoutInflater.from(this).inflate(R.layout.zhihu_layout,null);
+        View view2 = LayoutInflater.from(this).inflate(R.layout.collectednews,null);
+        viewList.add(view1);
+        viewList.add(view2);
+        titles.add("最新新闻");
+        titles.add("你的收藏");
+    }
+
 
     //最新news，获取其对应的title以及image
     private void queryNewsInfoFromServer(){

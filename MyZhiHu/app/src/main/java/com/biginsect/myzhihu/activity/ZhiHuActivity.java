@@ -31,15 +31,17 @@ import java.util.List;
 public class ZhiHuActivity extends AppCompatActivity {
 
     private News selectedNews;
-    private ListView listView;
-    private NewsAdapter adapter;
+    private ListView listView,collectedNews;
+    private NewsAdapter adapter,colAdapter;
     private ProgressDialog progressDialog;
     private List<News> newsList = new ArrayList<News>();
+    private List<News> colNews = new ArrayList<>();
     private ZhihuDB zhihuDB ;
     private List<News> dataList = new ArrayList<News>();
+    private List<News> listCol = new ArrayList<>();
 
     //实现viewpager所需要的属性
-    View view1;
+    View view1 , view2;
     private ViewPager viewPager;
     private PagerTitleStrip titleStrip;
     private List<View> viewList;
@@ -62,15 +64,37 @@ public class ZhiHuActivity extends AppCompatActivity {
         viewPager.setAdapter(myViewPagerAdapter);
         viewPager.setCurrentItem(0);
         //滑动这个viewpager的响应事件
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                switch (position){
+                    case 0:
+                    case 1:
+                        initCollectedNews();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         zhihuDB = ZhihuDB.getInstance(this);
+
+        //加载新闻主页
         adapter = new NewsAdapter(this,R.layout.news_item,dataList);
         queryNews();
         //错误的写法
 //        listView = (ListView)getLayoutInflater().inflate(R.layout.zhihu_layout,null).findViewById(R.id.listView);
-
-        
         listView = (ListView)view1.findViewById(R.id.listView);
         listView.setAdapter(adapter);
 
@@ -82,20 +106,32 @@ public class ZhiHuActivity extends AppCompatActivity {
                 String address = "http://news-at.zhihu.com/api/4/news/"+id;
                 Intent intent = new Intent(ZhiHuActivity.this,NewsWebActivity.class);
                 intent.putExtra("address",address);
+                intent.putExtra("id",id);
                 startActivity(intent);
             }
         });
 
 
+
+
+
     }
 
+    private void initCollectedNews(){
+        //加载收藏news页面所需内容
+        colAdapter = new NewsAdapter(this,R.layout.news_item,listCol);
+        queryCollectedNews();
+        collectedNews = (ListView)view2.findViewById(R.id.collectedNews);
+        collectedNews.setAdapter(colAdapter);
+    }
     //初始化viewpager中所需要的title view等
 
     private void initDatas(){
         viewList = new ArrayList<>();
         titles = new ArrayList<>();
+        //动态加载listview，一般放于容器中使用
         view1 = LayoutInflater.from(this).inflate(R.layout.zhihu_layout,null);
-        View view2 = LayoutInflater.from(this).inflate(R.layout.collectednews,null);
+        view2 = LayoutInflater.from(this).inflate(R.layout.collectednews,null);
         viewList.add(view1);
         viewList.add(view2);
         titles.add("最新新闻");
@@ -136,6 +172,17 @@ public class ZhiHuActivity extends AppCompatActivity {
         });
     }
 
+    //加载收藏页中的news
+    private void queryCollectedNews(){
+        colNews = zhihuDB.loadCollectedNews();
+        if (colNews.size() > 0){
+            listCol.clear();
+            for (News news : colNews){
+                listCol.add(news);
+            }
+            colAdapter.notifyDataSetChanged();
+        }
+    }
 
     //如果本地数据库保存有url等的信息，那么从数据库读取，否则直接访问url获取相对应的信息
     private void queryNews(){

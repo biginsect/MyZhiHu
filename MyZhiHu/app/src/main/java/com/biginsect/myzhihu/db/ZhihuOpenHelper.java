@@ -13,7 +13,8 @@ public class ZhihuOpenHelper extends SQLiteOpenHelper {
             "id text primary key ," +
             "news_date text," +
             "news_title text," +
-            "news_bitmapUrl text)";//数据库保存的是图片的url
+            "news_bitmapUrl text," +//数据库保存的是图片的url
+            "news_isCollected integer)";//0表示不收藏 1表示收藏
 
     public ZhihuOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);

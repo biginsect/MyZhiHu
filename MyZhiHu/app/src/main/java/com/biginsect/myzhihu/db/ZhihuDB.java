@@ -42,7 +42,7 @@ public class ZhihuDB {
             values.put("news_date",news.getDate());
             values.put("news_title",news.getTitle());
             values.put("news_bitmapUrl",news.getBitmapUrl());
-            //values.put("news_isCollected",news.getIsCollected());
+            values.put("news_isCollected",news.getIsCollected());
             db.insertWithOnConflict("News",null,values,SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
@@ -58,7 +58,7 @@ public class ZhihuDB {
                 news.setDate(cursor.getString(cursor.getColumnIndex("news_date")));
                 news.setTitle(cursor.getString(cursor.getColumnIndex("news_title")));
                 news.setBitmapUrl(cursor.getString(cursor.getColumnIndex("news_bitmapUrl")));
-                //news.setIsCollected(cursor.getInt(cursor.getColumnIndex("isCollected")));
+                news.setIsCollected(cursor.getInt(cursor.getColumnIndex("news_isCollected")));
                 list.add(news);
             }while (cursor.moveToNext());
         }
@@ -66,6 +66,27 @@ public class ZhihuDB {
             cursor.close();
         }
 
+        return list;
+    }
+
+    //加载收藏的news
+    public List<News> loadCollectedNews(){
+        List<News> list = new ArrayList<>();
+        Cursor cursor = db.query("News",null,"news_isCollected = ?",new String[]{"1"},null,null,null);
+       if (cursor.moveToFirst()) {
+           do {
+               News news = new News();
+               news.setId(cursor.getString(cursor.getColumnIndex("id")));
+               news.setDate(cursor.getString(cursor.getColumnIndex("news_date")));
+               news.setTitle(cursor.getString(cursor.getColumnIndex("news_title")));
+               news.setBitmapUrl(cursor.getString(cursor.getColumnIndex("news_bitmapUrl")));
+               news.setIsCollected(cursor.getInt(cursor.getColumnIndex("news_isCollected")));
+               list.add(news);
+           }while (cursor.moveToNext());
+       }
+        if (cursor != null){
+            cursor.close();
+        }
         return list;
     }
 }
